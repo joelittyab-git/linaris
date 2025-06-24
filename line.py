@@ -1,18 +1,21 @@
 from vector import Vector2D
 import math
+import numpy as np
+
 
 class Line2D:
-     def __init__(self,slope,y_intercept):
+     def __init__(self,slope,y_intercept, name=""):
           """Initializes a line based on the equation y = mx + c"""
           
           self.slope = slope
           self.y_intercept = y_intercept
+          self.name = name
      @classmethod
      def from_general_form(cls, a,b,c):
           """Initializes a line based on the equation ax + by + c = 0"""
           
           slope = -a/b
-          y_intercept = -c/a
+          y_intercept = -c/b
           return cls(slope=slope,y_intercept=y_intercept)
      
      @classmethod
@@ -42,6 +45,70 @@ class Line2D:
           """Returns the abscissa for the subsequent ordinate"""
           
           return (y-self.y_intercept)/self.slope
+     
+     def residual(self, point):
+          """
+          Returns the **residual** of the point from the line.
+
+          The residual is the **vertical difference** between the point's y-value
+          and the line's y-value at the same x-coordinate.
+
+          **Formula:**
+               residual = yₚ - (m * xₚ + c)
+          """
+          Line2D._validate_point(point)
+          
+          return point[1] - self.get_y(point[0])
+     
+     def is_parallel(self, line):
+          """Returns True if the line is parallel"""
+          if not isinstance(line, Line2D):
+               raise Exception(f"Expected <class = 'Line2D'>, received {type(line)}")
+          
+          if line.slope == self.slope:
+               return True
+          return False
+     
+     def is_perpendicular(self, line):
+          """Returns True if the line is perpendicular to this line, Flase otherwise"""
+          if not isinstance(line, Line2D):
+               raise Exception(f"Expected <class = 'Line2D'>, received {type(line)}")
+
+          if line.slope*self.slope==-1:
+               return True
+          return False
+     
+     def contains_point(self, point):
+          """Returns True if the point lies on the lines, False otherwise"""
+          Line2D._validate_point(point)
+          
+          if point[1] == self.slope*point[0] + self.y_intercept:
+               return True
+          return False   
+     
+     def intersection_point(self, line):
+          """If the line intersects this, returns the point else raises an exception"""
+          if not isinstance(line, Line2D):
+               raise Exception(f"Expected <class = 'Line2D'>, received {type(line)}")
+          
+          A = np.array([
+               [1,-self.slope],
+               [1, -line.slope]
+          ])
+          B = np.array([self.y_intercept, line.y_intercept])
+          
+          try:
+               y,x = np.linalg.solve(A,B)
+          except np.linalg.LinAlgError:
+               raise Exception("Invalid Line since it either contains infinitely many number of solutions or no solutions at all")
+          
+          return Vector2D(x,y,name=f"I({self.name}-{line.name})")
+          
+     
+     def as_feature_vector(self):
+          "Returns the vector in the form <slope,intercept>"
+          
+          return Vector2D(self.slope, self.intercept, name=f"Vector2D({self.name})")
      
      @staticmethod     
      def _validate_point(*points):
