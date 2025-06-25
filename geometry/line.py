@@ -1,7 +1,11 @@
-from vector import Vector2D
+from linaris.geometry.vector import Vector2D
 import math
 import numpy as np
 
+class InvalidLineError(Exception):
+     pass
+class InvalidPointsError(Exception):
+     pass
 
 class Line2D:
      def __init__(self,slope,y_intercept, name=""):
@@ -60,19 +64,19 @@ class Line2D:
           
           return point[1] - self.get_y(point[0])
      
-     def is_parallel(self, line):
+     def is_parallel(self, line, tol=1e-7):
           """Returns True if the line is parallel"""
           if not isinstance(line, Line2D):
-               raise Exception(f"Expected <class = 'Line2D'>, received {type(line)}")
+               raise InvalidLineError(f"Expected <class = 'Line2D'>. Received {type(line)}")
           
-          if line.slope == self.slope:
+          if abs(line.slope - self.slope)<tol:
                return True
           return False
      
      def is_perpendicular(self, line):
           """Returns True if the line is perpendicular to this line, Flase otherwise"""
           if not isinstance(line, Line2D):
-               raise Exception(f"Expected <class = 'Line2D'>, received {type(line)}")
+               raise InvalidLineError(f"Expected <class = 'Line2D'>, received {type(line)}")
 
           if line.slope*self.slope==-1:
                return True
@@ -89,7 +93,7 @@ class Line2D:
      def intersection_point(self, line):
           """If the line intersects this, returns the point else raises an exception"""
           if not isinstance(line, Line2D):
-               raise Exception(f"Expected <class = 'Line2D'>, received {type(line)}")
+               raise InvalidLineError(f"Expected <class = 'Line2D'>, received {type(line)}")
           
           A = np.array([
                [1,-self.slope],
@@ -100,15 +104,15 @@ class Line2D:
           try:
                y,x = np.linalg.solve(A,B)
           except np.linalg.LinAlgError:
-               raise Exception("Invalid Line since it either contains infinitely many number of solutions or no solutions at all")
+               raise InvalidLineError("Invalid Line since it either contains infinitely many number of solutions or no solutions at all")
           
           return Vector2D(x,y,name=f"I({self.name}-{line.name})")
           
      
      def as_feature_vector(self):
-          "Returns the vector in the form <slope,intercept>"
+          "Returns the line in the form <slope,intercept> vector"
           
-          return Vector2D(self.slope, self.intercept, name=f"Vector2D({self.name})")
+          return Vector2D(self.slope, self.y_intercept, name=f"Vector2D({self.name})")
      
      @staticmethod     
      def _validate_point(*points):
@@ -116,9 +120,9 @@ class Line2D:
           
           for point in points:
                if not (isinstance(point, Vector2D) or isinstance(point, tuple)):
-                    raise Exception("The points passed are not valid points. Expected tuples or vectors.")
+                    raise InvalidPointsError("The points passed are not valid points. Expected tuples or vectors.")
                elif isinstance(point, tuple) and len(point)!=2:
-                    raise Exception("Invalid points. Exptected a tuple with two flaoting numbers")
+                    raise InvalidPointsError("Invalid points. Exptected a tuple with two flaoting numbers")
                
      @property
      def angle(self):
