@@ -50,6 +50,17 @@ class Line2D:
           
           return (y-self.y_intercept)/self.slope
      
+     def set_slope(self, m:float):
+          """Sets the slope of the Line"""
+          
+          self.slope = m
+          
+     def set_intercept(self, c:float):
+          """Sets the intercept of the Line"""
+          
+          self.y_intercept = c
+          
+     
      def residual(self, point):
           """
           Returns the **residual** of the point from the line.
