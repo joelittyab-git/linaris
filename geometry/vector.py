@@ -1,10 +1,12 @@
 import math
+from sympy import Expr,sqrt
 
 class Vec:
-     def __init__(self, *components, name = ""):
-          for component in components:
-               if not (isinstance(component, int) or isinstance(component, float)):
-                    raise Exception("Invalid vector component")
+     def __init__(self, *components, name = "", check=True):
+          if check:
+               for component in components:
+                    if not (isinstance(component, int) or isinstance(component, float)):
+                         raise Exception("Invalid vector component")
                
           self.name = name
           
@@ -84,8 +86,13 @@ class Vec:
      def magnitude(self):
           """Returns the magnitude of the vector"""
           
-          squared = [math.pow(a,2) for a in self.components]
-          return math.sqrt(sum(squared))
+          squared = [a**2 for a in self.components]
+          summed = sum(squared)
+          
+          if all([isinstance(a,(int, float)) for a in self.components]):
+               return math.sqrt(summed)
+          return sqrt(summed)
+               
           
      
      def dot(self, vector):
@@ -119,8 +126,8 @@ class Vec:
      
      
 class Vector2D(Vec):
-     def __init__(self, i,j, name=""):
-          super().__init__(i,j, name=name)
+     def __init__(self, i,j, name="", check:bool=True):
+          super().__init__(i,j, name=name, check=check)
           
      @property
      def x(self):
@@ -171,8 +178,8 @@ class Vector2D(Vec):
           
      
 class Vector3D(Vec):
-     def __init__(self, i,j,k, name = ""):
-          super().__init__(i,j,k, name=name)
+     def __init__(self, i,j,k, name = "", check:bool = True):
+          super().__init__(i,j,k, name=name, check=check)
           
      @property
      def x(self):
